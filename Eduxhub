@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduHub - Student Resource Portal & JEE/NEET Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tone.js for Pomodoro Audio Sound Effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Canvas Confetti for Shreyansh Easter Egg -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(226, 232, 240, 0.6);
+            border-radius: 8px;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.7);
+            border-radius: 9999px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.9);
+            background-clip: content-box;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo & Navigation -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateToHome()">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                    <i class="fa-solid font-bold fa-graduation-cap text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">EduHub</h1>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">Category Directory & JEE/NEET Hub</p>
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Pomodoro Study Timer Trigger -->
+                <button onclick="togglePomodoroModal()" class="flex items-center space-x-1.5 bg-red-50 dark:bg-red-950/50 hover:bg-red-100 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/60 text-xs sm:text-sm font-semibold px-3 py-2 rounded-xl transition">
+                    <i class="fa-solid fa-stopwatch text-red-500"></i>
+                    <span class="hidden md:inline">Focus Timer</span>
+                    <span id="timerDisplayHeader" class="font-mono text-xs font-bold text-red-600 dark:text-red-400">25:00</span>
+                </button>
+
+                <!-- Bookmarks Quick Access Button -->
+                <button onclick="navigateToBookmarks()" class="flex items-center space-x-1.5 bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 text-xs sm:text-sm font-semibold px-3 py-2 rounded-xl transition">
+                    <i class="fa-solid fa-bookmark text-amber-500"></i>
+                    <span class="hidden sm:inline">Bookmarks</span>
+                    <span id="headerBookmarkCount" class="ml-1 px-1.5 py-0.2 bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 rounded-full text-[10px] font-bold">0</span>
+                </button>
+
+                <!-- Add New Resource Button -->
+                <button onclick="openAddModal()" class="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-xl transition shadow-sm shadow-blue-600/30">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span class="hidden sm:inline">Add Link</span>
+                </button>
+
+                <!-- Export & Import Data JSON Button -->
+                <button onclick="openExportModal()" title="View, Backup & Restore Data" class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    <i class="fa-solid fa-code text-sm sm:text-base"></i>
+                </button>
+
+                <!-- Theme Toggle Button -->
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    <i id="themeIcon" class="fa-solid fa-moon text-sm sm:text-base"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Daily Study Streak Banner -->
+        <div class="relative overflow-hidden bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-indigo-800/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-4 z-10">
+                <!-- Flame Easter Egg Trigger (Click 5 times) -->
+                <button onclick="handleFlameClick()" title="Click 5 times for a special easter egg!" class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-400 text-2xl shrink-0 transition hover:scale-110 active:scale-95 cursor-pointer">
+                    <i id="flameIcon" class="fa-solid fa-fire-flame-curved animate-pulse"></i>
+                </button>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs uppercase tracking-wider font-bold text-amber-400">Daily Study Hub</span>
+                        <span id="streakCountBadge" class="bg-amber-500 text-slate-950 font-extrabold text-[10px] px-2 py-0.5 rounded-full">🔥 Active Hub</span>
+                        <span id="shreyanshBadge" class="hidden bg-amber-500 text-slate-950 font-bold text-[10px] px-2 py-0.5 rounded-full animate-bounce">🧠 Shreyansh Genius Mode</span>
+                    </div>
+                    <h3 id="streakHeadline" class="text-sm sm:text-base font-bold text-white transition-all duration-300 flex items-center space-x-2">
+                        <span>Daily Focus & Knowledge Portal 🚀</span>
+                    </h3>
+                </div>
+            </div>
+            
+            <div class="z-10 flex items-center space-x-3 w-full sm:w-auto justify-end">
+                <div class="text-right">
+                    <p class="text-[11px] text-slate-300 font-medium">Daily Target</p>
+                    <p id="dailyGoalText" class="text-xs font-bold text-amber-400">0 / 3 Portals</p>
+                </div>
+                <div class="w-24 bg-slate-800 rounded-full h-2.5 overflow-hidden border border-slate-700">
+                    <div id="dailyGoalBar" class="bg-amber-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 1: HOME PAGE / CATEGORIES DASHBOARD -->
+        <div id="homeView" class="space-y-8">
+            
+            <!-- Hero Header & Global Search -->
+            <div class="text-center max-w-3xl mx-auto pt-2 pb-2 space-y-4">
+                <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 text-xs font-semibold">
+                    <i class="fa-solid fa-compass"></i>
+                    <span>Browse By Dedicated Categories</span>
+                </span>
+                <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    Explore curated study portals & learning resources
+                </h2>
+                <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+                    Select a category below to access specialized test series, StudyPanda live portals, textbook libraries, research tools, coding environments, and developer documentation.
+                </p>
+
+                <!-- Global Search Input -->
+                <div class="relative max-w-xl mx-auto pt-2">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <input type="text" id="globalSearchInput" oninput="handleGlobalSearch()" placeholder="Search all links or tools (e.g. GitHub, LeetCode, Stack Overflow, MDN, Wotaku)..." 
+                        class="w-full pl-11 pr-10 py-3.5 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition">
+                    <button id="clearGlobalSearchBtn" onclick="clearGlobalSearch()" class="hidden absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Banner -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+                <div class="text-center p-2 border-r border-slate-100 dark:border-slate-700/60">
+                    <div class="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400" id="statCategories">6</div>
+                    <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Main Categories</div>
+                </div>
+                <div class="text-center p-2 border-r border-slate-100 dark:border-slate-700/60">
+                    <div class="text-xl sm:text-2xl font-extrabold text-amber-500" id="statResources">0</div>
+                    <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Verified Links</div>
+                </div>
+                <div class="text-center p-2 border-r border-slate-100 dark:border-slate-700/60">
+                    <div class="text-xl sm:text-2xl font-extrabold text-emerald-500" id="statJeeNeet">0</div>
+                    <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">JEE & NEET Portals</div>
+                </div>
+                <div class="text-center p-2">
+                    <div class="text-xl sm:text-2xl font-extrabold text-pink-500" id="statCodingTech">0</div>
+                    <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Coding & Tech Tools</div>
+                </div>
+            </div>
+
+            <!-- Filter Pills Sub-System -->
+            <div class="flex items-center space-x-2 overflow-x-auto pb-2 no-scrollbar text-xs font-semibold">
+                <span class="text-slate-400 shrink-0 mr-1"><i class="fa-solid fa-filter text-blue-500"></i> Filter Tags:</span>
+                <button onclick="filterBySubTag('ALL')" class="subtag-btn px-3 py-1.5 rounded-xl bg-blue-600 text-white shrink-0">All Types</button>
+                <button onclick="filterBySubTag('Batches')" class="subtag-btn px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 shrink-0">🎥 Batches & Courses</button>
+                <button onclick="filterBySubTag('Tests')" class="subtag-btn px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 shrink-0">📝 Tests & Practice</button>
+                <button onclick="filterBySubTag('PYQs')" class="subtag-btn px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 shrink-0">⏱️ PYQs & Q&A</button>
+                <button onclick="filterBySubTag('Books')" class="subtag-btn px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 shrink-0">📚 Docs & Books</button>
+                <button onclick="filterBySubTag('AI')" class="subtag-btn px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 shrink-0">🤖 AI Assistants</button>
+                <button onclick="filterBySubTag('Fun')" class="subtag-btn px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-pink-500 shrink-0">🎮 Fun & Tools</button>
+            </div>
+
+            <!-- Main Categories Grid Page -->
+            <section class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-layer-group text-blue-500"></i>
+                        <span>Select a Category to View Links</span>
+                    </h3>
+                    <span class="text-xs text-slate-400">Click any card to enter page</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="categoriesDashboardGrid">
+                    <!-- Category Cards injected dynamically via JS -->
+                </div>
+            </section>
+
+            <!-- Featured Quick Launch Scroll Bar -->
+            <section class="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center space-x-2">
+                        <i class="fa-solid fa-bolt text-amber-500"></i>
+                        <span>Popular Quick Launch Portals</span>
+                    </h3>
+                    <span class="text-[11px] text-slate-400">Scroll horizontally →</span>
+                </div>
+                <div class="flex space-x-3 overflow-x-auto pb-3 pt-1" id="featuredScrollGrid">
+                    <!-- Dynamically populated featured items -->
+                </div>
+            </section>
+        </div>
+
+        <!-- VIEW 2: DEDICATED CATEGORY PAGE / BOOKMARKS PAGE -->
+        <div id="categoryDetailView" class="hidden space-y-6">
+            
+            <!-- Navigation Header & Breadcrumb -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
+                        <button onclick="navigateToHome()" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center space-x-1">
+                            <i class="fa-solid fa-house"></i>
+                            <span>Categories</span>
+                        </button>
+                        <span>/</span>
+                        <span id="breadcrumbCategoryName" class="font-semibold text-slate-800 dark:text-slate-200">Category Name</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div id="activeCategoryIconBox" class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg shadow-sm">
+                            <i id="activeCategoryIcon" class="fa-solid fa-folder"></i>
+                        </div>
+                        <div>
+                            <h2 id="activeCategoryTitle" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
+                                Category Title
+                            </h2>
+                            <p id="activeCategorySubtitle" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                                Specific description of the active category
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back to Categories Button -->
+                <button onclick="navigateToHome()" class="self-start sm:self-center flex items-center space-x-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 text-xs font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Back to Categories</span>
+                </button>
+            </div>
+
+            <!-- Controls Bar: Category Search, Sorting & Counter -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <!-- Search within this Category -->
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </div>
+                    <input type="text" id="categorySearchInput" oninput="handleCategorySearch()" placeholder="Filter within this category..." 
+                        class="w-full pl-9 pr-8 py-2 text-xs sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="clearCategorySearchBtn" onclick="clearCategorySearch()" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Sort & Count -->
+                <div class="flex items-center justify-between sm:justify-end space-x-4 text-xs">
+                    <div class="flex items-center space-x-1.5 text-slate-500 dark:text-slate-400">
+                        <i class="fa-solid fa-sort"></i>
+                        <span>Sort:</span>
+                        <select id="sortSelect" onchange="handleSortChange()" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none">
+                            <option value="rating-desc">Highest Rated ⭐</option>
+                            <option value="title-asc">Title (A-Z)</option>
+                            <option value="default">Default</option>
+                        </select>
+                    </div>
+                    <span id="categoryResultsCount" class="font-medium text-slate-500 dark:text-slate-400">
+                        Showing 0 links
+                    </span>
+                </div>
+            </div>
+
+            <!-- Active Category Resource Grid -->
+            <section>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="categoryResourceGrid">
+                    <!-- Dynamic cards populated here -->
+                </div>
+
+                <!-- Category Empty State -->
+                <div id="categoryEmptyState" class="hidden text-center py-12 px-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400">
+                        <i class="fa-solid fa-folder-open text-2xl"></i>
+                    </div>
+                    <h4 class="text-base font-semibold text-slate-800 dark:text-slate-200">No resources found</h4>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Try clearing your search terms or adding a new link to this category.</p>
+                    <button onclick="clearCategorySearch()" class="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline">Clear search filter</button>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- SHREYANSH GENIUS EASTER EGG MODAL -->
+    <div id="shreyanshModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+        <div class="bg-gradient-to-b from-blue-900 via-indigo-950 to-slate-950 border-2 border-amber-400 rounded-3xl max-w-md w-full p-6 text-center space-y-5 shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-amber-400/20 rounded-full blur-2xl"></div>
+            
+            <div class="flex justify-between items-center border-b border-amber-400/40 pb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🧠</span>
+                    <h3 class="text-base font-extrabold text-amber-300 tracking-wide uppercase">
+                        Shreyansh Genius Protocol Triggered!
+                    </h3>
+                </div>
+                <button onclick="closeShreyanshModal()" class="text-amber-300 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Recognition Card -->
+            <div class="bg-slate-900/90 border border-amber-400/50 rounded-2xl p-4 text-left space-y-2 shadow-inner">
+                <div class="flex justify-between items-center text-[10px] uppercase tracking-widest font-bold text-amber-400">
+                    <span>Official Hub Recognition</span>
+                    <span>VERIFIED GENIUS #100%</span>
+                </div>
+                <h4 class="text-lg font-black text-white bg-gradient-to-r from-amber-300 via-blue-400 to-indigo-300 bg-clip-text text-transparent">
+                    shreyansh genius hai!
+                </h4>
+                <p id="shreyanshQuote" class="text-xs text-slate-300 leading-relaxed italic">
+                    "According to Newton's 1st Law of Genius Dynamics: Shreyansh is 100% genius, and his study energy is directly proportional to infinite brilliance! 🧠✨"
+                </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="space-y-2">
+                <button onclick="generateShreyanshQuote()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Generate New Shreyansh Quote</span>
+                </button>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="playShreyanshSound()" class="py-2 bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/40 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-volume-high text-amber-400"></i>
+                        <span>Play Audio 🔔</span>
+                    </button>
+                    <button onclick="triggerShreyanshConfetti()" class="py-2 bg-amber-950/80 hover:bg-amber-900 text-amber-200 border border-amber-500/40 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-gifts text-amber-400"></i>
+                        <span>Confetti Party 🎉</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="toggleShreyanshGeniusMode()" id="shreyanshToggleBtn" class="text-xs text-amber-300 hover:text-white underline">
+                    Toggle 'shreyansh genius hai' in Banner
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pomodoro Study Timer Modal -->
+    <div id="pomodoroModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-6 text-center space-y-5 shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-stopwatch text-red-500"></i>
+                    <span>Pomodoro Study Timer</span>
+                </h3>
+                <button onclick="togglePomodoroModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="text-5xl font-extrabold font-mono text-slate-900 dark:text-white tracking-wider my-4" id="pomodoroTimerDisplay">
+                25:00
+            </div>
+
+            <div class="flex justify-center space-x-2 text-xs font-semibold">
+                <button onclick="setTimerMode(25)" id="btnMode25" class="px-3 py-1.5 rounded-xl bg-red-600 text-white">25m Work</button>
+                <button onclick="setTimerMode(5)" id="btnMode5" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">5m Break</button>
+                <button onclick="setTimerMode(15)" id="btnMode15" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">15m Long Break</button>
+            </div>
+
+            <div class="flex justify-center space-x-3 pt-2">
+                <button onclick="startTimer()" id="btnStartTimer" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Start Session</span>
+                </button>
+                <button onclick="pauseTimer()" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl text-xs transition">Pause</button>
+                <button onclick="resetTimer()" class="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold rounded-xl text-xs transition">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share & QR Code Modal -->
+    <div id="qrModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-qrcode text-blue-500"></i>
+                    <span>Scan / Share Link</span>
+                </h3>
+                <button onclick="closeQrModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <h4 id="qrModalTitle" class="font-bold text-slate-800 dark:text-slate-100 text-sm"></h4>
+            <div class="p-3 bg-white rounded-2xl inline-block border border-slate-200 shadow-inner">
+                <img id="qrImage" src="" alt="QR Code" class="w-44 h-44 mx-auto">
+            </div>
+            <p id="qrModalUrl" class="text-xs text-slate-400 font-mono truncate px-2"></p>
+            
+            <button onclick="copyShareUrl()" class="w-full py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition flex items-center justify-center space-x-1.5">
+                <i class="fa-regular fa-copy"></i>
+                <span>Copy Direct Link</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Personal Link Notes Modal -->
+    <div id="notesModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-note-sticky text-amber-500"></i>
+                    <span>Personal Study Notes</span>
+                </h3>
+                <button onclick="closeNotesModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-500 dark:text-slate-400">Save quick reminders, chapter goals, or login keys for this portal.</p>
+
+            <textarea id="noteInputText" rows="4" placeholder="e.g. Completed Chapter 3 Physics lectures here. Revise DPP #5 on Sunday..." 
+                class="w-full p-3 text-xs sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeNotesModal()" class="px-4 py-2 text-xs text-slate-500 rounded-xl">Cancel</button>
+                <button onclick="saveNoteForResource()" class="px-4 py-2 bg-amber-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-amber-400 transition">Save Note</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Broken Link Modal -->
+    <div id="reportModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-3 text-center shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="w-12 h-12 bg-red-100 dark:bg-red-950 text-red-500 rounded-2xl flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Report Broken Link?</h3>
+            <p id="reportTargetTitle" class="text-xs text-slate-500 dark:text-slate-400"></p>
+            <div class="flex justify-center space-x-2 pt-2">
+                <button onclick="closeReportModal()" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-xs font-semibold rounded-xl">Cancel</button>
+                <button onclick="submitReport()" class="px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-xl hover:bg-red-700">Submit Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Resource Modal -->
+    <div id="addModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-plus text-blue-500"></i>
+                    <span>Add New Study Resource</span>
+                </h3>
+                <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-semibold text-slate-700 dark:text-slate-300">Portal / Site Title</label>
+                    <input type="text" id="newTitle" placeholder="e.g. My Study Portal" class="w-full mt-1 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-700 dark:text-slate-300">Web URL (https://...)</label>
+                    <input type="url" id="newUrl" placeholder="https://example.com" class="w-full mt-1 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-700 dark:text-slate-300">Category</label>
+                    <select id="newCategory" class="w-full mt-1 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option value="JEE & NEET">JEE & NEET</option>
+                        <option value="Free Books">Free Books</option>
+                        <option value="AI & Study">AI & Study</option>
+                        <option value="Productivity">Productivity</option>
+                        <option value="Coding & Tech">Coding & Tech</option>
+                        <option value="Fun & Media">Fun & Media</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-700 dark:text-slate-300">Description</label>
+                    <textarea id="newDesc" rows="2" placeholder="Brief details about this study portal..." class="w-full mt-1 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeAddModal()" class="px-4 py-2 text-xs text-slate-500 rounded-xl">Cancel</button>
+                <button onclick="saveNewResource()" class="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl hover:bg-blue-700 transition">Add Portal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export & Import JSON Code Modal -->
+    <div id="exportModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-code text-blue-500"></i>
+                    <span>Resource List JSON & Backup Manager</span>
+                </h3>
+                <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+                You can copy this JSON array to backup your saved links or paste a custom JSON array to import resources.
+            </p>
+            <textarea id="jsonOutput" class="w-full p-4 bg-slate-900 text-emerald-400 rounded-xl text-xs font-mono h-56 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"></textarea>
+            
+            <div class="flex justify-between items-center pt-2">
+                <span id="copyNotice" class="text-xs text-emerald-500 font-medium opacity-0 transition-opacity">Action completed!</span>
+                <div class="flex space-x-2">
+                    <button onclick="importJsonData()" class="px-4 py-2 bg-purple-600 text-white text-xs font-medium rounded-xl hover:bg-purple-700 transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-file-import"></i>
+                        <span>Import Backup</span>
+                    </button>
+                    <button onclick="copyJsonToClipboard()" class="px-4 py-2 bg-blue-600 text-white text-xs font-medium rounded-xl hover:bg-blue-700 transition flex items-center space-x-1.5">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy JSON</span>
+                    </button>
+                    <button onclick="closeExportModal()" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 hidden bg-slate-900 text-white text-xs font-medium px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 border border-slate-700 transition-all">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastMsg">Action completed successfully</span>
+    </div>
+
+    <script>
+        // Categories Definition
+        const categories = [
+            { id: "JEE & NEET", name: "JEE & NEET Portals", icon: "fa-graduation-cap", color: "from-amber-500 to-red-600", desc: "Test series, PW lecture streams, PYQs, and StudyPanda live portals." },
+            { id: "Free Books", name: "Free Books & Libraries", icon: "fa-book-bookmark", color: "from-emerald-600 to-teal-700", desc: "Anna's Archive, Z-Library, LibGen, and open educational textbooks." },
+            { id: "AI & Study", name: "AI Study Assistants", icon: "fa-robot", color: "from-cyan-600 to-blue-700", desc: "Perplexity, Consensus, and AI research tools to fast-track learning." },
+            { id: "Productivity", name: "Productivity & Megathreads", icon: "fa-bolt", color: "from-indigo-600 to-violet-700", desc: "FMHY educational megathreads, timer tools, and study planner hubs." },
+            { id: "Coding & Tech", name: "Coding & Web Tools", icon: "fa-laptop-code", color: "from-blue-600 to-indigo-800", desc: "IDE compilers, LeetCode, GitHub, developer docs, and coding challenges." },
+            { id: "Fun & Media", name: "Fun, Anime & Cool Web", icon: "fa-gamepad", color: "from-pink-500 to-purple-600", desc: "Wotaku wiki, FMHY entertainment, anime hubs, retro games, and fun web corners." }
+        ];
+
+        // Educational & Coding Resources Dataset
+        const initialResources = [
+            { id: "sp1", title: "StudyPanda Live", description: "Top student resource platform offering direct links, batch lecture streams, and curated exam study materials.", category: "JEE & NEET", badge: "StudyPanda", rating: 5.0, url: "https://studypanda.live/", featured: true, icon: "fa-panda", color: "from-amber-500 to-red-600", subtag: "Batches" },
+            { id: "jn1", title: "Allen Test Series", description: "Comprehensive online mock tests, test series, and practice papers for Allen JEE/NEET preparation.", category: "JEE & NEET", badge: "Allen Tests", rating: 4.9, url: "http://test.neetxnoah1.workers.dev", featured: true, icon: "fa-vial", color: "from-amber-500 to-red-600", subtag: "Tests" },
+            { id: "jn2", title: "Pikachu PW Books", description: "Direct access to Physics Wallah modules, books, DPPS, and study material PDFs.", category: "JEE & NEET", badge: "PW Books", rating: 4.8, url: "https://pikachu-books.vercel.app/", featured: true, icon: "fa-book-bookmark", color: "from-amber-500 to-red-600", subtag: "Books" },
+            { id: "jn3", title: "PW Thor", description: "Physics Wallah batch lectures, DPP solutions, and live batch content streaming.", category: "JEE & NEET", badge: "PW Batches", rating: 4.9, url: "https://pwthor.live", featured: true, icon: "fa-bolt", color: "from-amber-500 to-red-600", subtag: "Batches" },
+            { id: "jn5", title: "Pikachu CBT Tests", description: "Online Computer Based Test (CBT) interface for practicing full-length mock tests.", category: "JEE & NEET", badge: "CBT Portal", rating: 4.8, url: "https://pikachuxcbt.vercel.app/", featured: true, icon: "fa-laptop-code", color: "from-amber-500 to-red-600", subtag: "Tests" },
+            { id: "jn6", title: "PDF to CBT Converter", description: "Web application tool to convert question paper PDFs into interactive CBT test interfaces.", category: "JEE & NEET", badge: "CBT Converter", rating: 4.9, url: "http://newtcbt.vercel.app", featured: true, icon: "fa-file-code", color: "from-amber-500 to-red-600", subtag: "Tests" },
+            { id: "jn7", title: "Pikachu JEE CBT (PYQs)", description: "Topicwise and yearwise JEE Main & Advanced Previous Year Questions (PYQs) in authentic CBT format.", category: "JEE & NEET", badge: "JEE PYQs", rating: 4.9, url: "https://pikachu-jee-cbt.vercel.app/", featured: true, icon: "fa-clock-rotate-left", color: "from-amber-500 to-red-600", subtag: "PYQs" },
+            { id: "jn8", title: "Marks App (MathonGo)", description: "Top Reddit-recommended app to solve chapter-wise JEE Main, Advanced, and NEET PYQs with stats.", category: "JEE & NEET", badge: "PYQ App", rating: 4.9, url: "https://web.getmarks.app/", featured: false, icon: "fa-bullseye", color: "from-amber-500 to-red-600", subtag: "PYQs" },
+            { id: "jn10", title: "Delta Study", description: "Reddit-famous portal for free streaming of PW, Allen, and Unacademy lectures and test series.", category: "JEE & NEET", badge: "Reddit Pick", rating: 4.9, url: "https://deltastudy.site", featured: true, icon: "fa-clapperboard", color: "from-amber-500 to-red-600", subtag: "Batches" },
+            { id: "jn11", title: "Ved Study", description: "High quality JEE & NEET video batch streaming portal with chapterwise DPP solvers.", category: "JEE & NEET", badge: "Free Batches", rating: 4.8, url: "https://vedstudy.site", featured: true, icon: "fa-video", color: "from-amber-500 to-red-600", subtag: "Batches" },
+            { id: "jn13", title: "PW4Free Portal", description: "Direct PW batch lecture player that bypasses key generation and subscription requirements.", category: "JEE & NEET", badge: "Keyless Player", rating: 4.9, url: "https://pw4free.com", featured: true, icon: "fa-key", color: "from-amber-500 to-red-600", subtag: "Batches" },
+            { id: "jn14", title: "Unacademy", description: "World-class video lectures, JEE revision notes, and conceptual checklists.", category: "JEE & NEET", badge: "Physics Hub", rating: 4.9, url: "http://studyuk.online", featured: false, icon: "fa-atom", color: "from-amber-500 to-red-600", subtag: "Batches" },
+            { id: "jn15", title: "ExamGoal JEE & NEET", description: "High-precision real-time exam practice platform featuring past 10+ years JEE Main/Adv and NEET CBT papers.", category: "JEE & NEET", badge: "Mock Analytics", rating: 4.9, url: "https://www.examgoal.com/", featured: false, icon: "fa-square-check", color: "from-amber-500 to-red-600", subtag: "Tests" },
+            { id: "rd1", title: "Anna's Archive", description: "The world's largest open shadow library indexing LibGen, Z-Library, and Sci-Hub books and papers.", category: "Free Books", badge: "Reddit Pick", rating: 4.9, url: "https://annas-archive.org/", featured: true, icon: "fa-book-atlas", color: "from-emerald-600 to-teal-700", subtag: "Books" },
+            { id: "rd2", title: "FMHY Educational Megathread", description: "FreeMediaHeckYa curated list of non-profit educational platforms, textbooks, and online courses.", category: "Productivity", badge: "Megathread", rating: 5.0, url: "https://fmhy.net/edupiracy", featured: true, icon: "fa-shield-halved", color: "from-indigo-600 to-violet-700", subtag: "Books" },
+            { id: "1", title: "Internet Archive", description: "Non-profit library of millions of free books, movies, software, music, websites, and historic texts.", category: "Free Books", badge: "100% Free", rating: 4.8, url: "https://archive.org", featured: false, icon: "fa-box-archive", color: "from-emerald-600 to-teal-700", subtag: "Books" },
+            { id: "bk2", title: "PDF Drive Library", description: "Search engine with over 75+ million free PDF books, research manuals, self-help, and textbooks.", category: "Free Books", badge: "PDF Search", rating: 4.8, url: "https://www.pdfdrive.com/", featured: false, icon: "fa-file-pdf", color: "from-emerald-600 to-teal-700", subtag: "Books" },
+            { id: "bk3", title: "Open Library", description: "An open, editable library catalog attempting to create a web page for every book ever published.", category: "Free Books", badge: "Open Access", rating: 4.7, url: "https://openlibrary.org/", featured: false, icon: "fa-book-open-reader", color: "from-emerald-600 to-teal-700", subtag: "Books" },
+            { id: "26", title: "Perplexity AI", description: "AI powered answer engine providing sourced research answers and citation summaries.", category: "AI & Study", badge: "Free Tier", rating: 4.8, url: "https://www.perplexity.ai", featured: true, icon: "fa-robot", color: "from-cyan-600 to-blue-700", subtag: "AI" },
+            { id: "27", title: "Consensus AI", description: "AI search engine that reads peer-reviewed papers to give science-backed research answers.", category: "AI & Study", badge: "AI Research", rating: 4.7, url: "https://consensus.app", featured: false, icon: "fa-wand-magic-sparkles", color: "from-cyan-600 to-blue-700", subtag: "AI" },
+            { id: "ai3", title: "Phind AI Engine", description: "Generative AI search engine built specifically for developers, complex math problems, and technical topics.", category: "AI & Study", badge: "Tech AI", rating: 4.9, url: "https://www.phind.com/", featured: false, icon: "fa-microchip", color: "from-cyan-600 to-blue-700", subtag: "AI" },
+            { id: "ai4", title: "Claude AI Studio", description: "Anthropic's advanced AI assistant renowned for articulate writing, long-document reasoning, and coding.", category: "AI & Study", badge: "Top Rated", rating: 4.9, url: "https://claude.ai/", featured: false, icon: "fa-brain", color: "from-cyan-600 to-blue-700", subtag: "AI" },
+            { id: "pr2", title: "LifeAt Virtual Study Spaces", description: "Immersive study environments with lofi music, pomodoro timers, and co-working virtual rooms.", category: "Productivity", badge: "Focus Space", rating: 4.8, url: "https://lifeat.io/", featured: false, icon: "fa-mug-hot", color: "from-indigo-600 to-violet-700", subtag: "Batches" },
+            { id: "pr3", title: "Notion Study Templates", description: "Free customizable Notion workspace templates for student second brains, assignment tracking, and notes.", category: "Productivity", badge: "Templates", rating: 4.8, url: "https://www.notion.so/templates", featured: false, icon: "fa-table-cells", color: "from-indigo-600 to-violet-700", subtag: "Books" },
+            { id: "cd1", title: "Replit Cloud IDE", description: "Instant online browser compiler and collaborative workspace supporting 50+ programming languages.", category: "Coding & Tech", badge: "Online Compiler", rating: 4.8, url: "https://replit.com/", featured: false, icon: "fa-code", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "cd2", title: "Excalidraw Diagramming", description: "Virtual hand-drawn sketch canvas for quick flowcharts, mind maps, and whiteboard visual study.", category: "Coding & Tech", badge: "Whiteboard", rating: 4.9, url: "https://excalidraw.com/", featured: false, icon: "fa-pen-ruler", color: "from-blue-600 to-indigo-800", subtag: "Fun" },
+            { id: "cd3", title: "GitHub", description: "The premier platform for software developers to host, collaborate, and manage open-source code repositories.", category: "Coding & Tech", badge: "Version Control", rating: 5.0, url: "https://github.com/", featured: true, icon: "fa-brands fa-github", color: "from-blue-600 to-indigo-800", subtag: "Books" },
+            { id: "cd4", title: "Stack Overflow", description: "World's largest Q&A community for programmers, software engineers, and computer science students.", category: "Coding & Tech", badge: "Dev Q&A", rating: 4.9, url: "https://stackoverflow.com/", featured: true, icon: "fa-brands fa-stack-overflow", color: "from-blue-600 to-indigo-800", subtag: "PYQs" },
+            { id: "cd5", title: "LeetCode", description: "Premier coding challenge platform for honing data structures, algorithms, and technical interview prep.", category: "Coding & Tech", badge: "DSA Practice", rating: 4.9, url: "https://leetcode.com/", featured: true, icon: "fa-terminal", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "cd6", title: "HackerRank", description: "Interactive skill practice platform covering Python, SQL, C++, algorithms, and certification badges.", category: "Coding & Tech", badge: "Coding Badges", rating: 4.8, url: "https://www.hackerrank.com/", featured: false, icon: "fa-laptop-code", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "cd7", title: "CodeChef", description: "Indian & global competitive programming platform hosting contests, long challenges, and beginner tutorials.", category: "Coding & Tech", badge: "Contests", rating: 4.8, url: "https://www.codechef.com/", featured: false, icon: "fa-fire", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "cd8", title: "Codeforces", description: "Top-rated competitive coding platform for high-frequency contests, rating levels, and algorithm problemsets.", category: "Coding & Tech", badge: "Competitive", rating: 4.9, url: "https://codeforces.com/", featured: false, icon: "fa-chart-simple", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "cd9", title: "freeCodeCamp", description: "Free full-stack curriculum with hands-on projects and verified certifications in web development & Python.", category: "Coding & Tech", badge: "Free Courses", rating: 5.0, url: "https://www.freecodecamp.org/", featured: true, icon: "fa-campground", color: "from-blue-600 to-indigo-800", subtag: "Batches" },
+            { id: "cd10", title: "MDN Web Docs", description: "The definitive Mozilla developer documentation for HTML, CSS, JavaScript, and Web APIs.", category: "Coding & Tech", badge: "Official Docs", rating: 5.0, url: "https://developer.mozilla.org/", featured: true, icon: "fa-book-journal-whills", color: "from-blue-600 to-indigo-800", subtag: "Books" },
+            { id: "cd11", title: "CodePen", description: "Social web development environment for building, testing, and showcasing front-end HTML/CSS/JS snippets.", category: "Coding & Tech", badge: "Frontend Sandbox", rating: 4.8, url: "https://codepen.io/", featured: false, icon: "fa-brands fa-codepen", color: "from-blue-600 to-indigo-800", subtag: "Fun" },
+            { id: "cd12", title: "JSFiddle", description: "Lightweight online web sandbox for quick testing and sharing HTML, CSS, and JavaScript code snippets.", category: "Coding & Tech", badge: "Web Sandbox", rating: 4.7, url: "https://jsfiddle.net/", featured: false, icon: "fa-brands fa-js", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "cd13", title: "StackBlitz", description: "WebContainers-powered instant browser IDE for React, Angular, Vue, and full-stack Node.js environments.", category: "Coding & Tech", badge: "Instant Node IDE", rating: 4.9, url: "https://stackblitz.com/", featured: true, icon: "fa-bolt-lightning", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "cd14", title: "GeeksforGeeks", description: "Massive computer science hub featuring algorithms, DSA course notes, language syntax, and interview roadmaps.", category: "Coding & Tech", badge: "CS Tutorials", rating: 4.8, url: "https://www.geeksforgeeks.org/", featured: false, icon: "fa-square-binary", color: "from-blue-600 to-indigo-800", subtag: "Books" },
+            { id: "cd15", title: "Roadmap.sh", description: "Community-created visual roadmaps, guidebooks, and paths for Frontend, Backend, DevOps, and AI engineering.", category: "Coding & Tech", badge: "Career Paths", rating: 4.9, url: "https://roadmap.sh/", featured: true, icon: "fa-route", color: "from-blue-600 to-indigo-800", subtag: "Books" },
+            { id: "cd16", title: "W3Schools", description: "Beginner-friendly interactive web development tutorials, exercises, and code try-it-yourself runners.", category: "Coding & Tech", badge: "Beginner Friendly", rating: 4.7, url: "https://www.w3schools.com/", featured: false, icon: "fa-graduation-cap", color: "from-blue-600 to-indigo-800", subtag: "Books" },
+            { id: "cd17", title: "DevDocs.io", description: "Fast, clean, offline-capable unified documentation browser for 50+ programming languages and frameworks.", category: "Coding & Tech", badge: "Unified Docs", rating: 4.9, url: "https://devdocs.io/", featured: false, icon: "fa-layer-group", color: "from-blue-600 to-indigo-800", subtag: "Books" },
+            { id: "cd18", title: "Carbon Snippet Generator", description: "Create and share beautiful high-resolution image cards of source code snippets for notes or posts.", category: "Coding & Tech", badge: "Code Cards", rating: 4.8, url: "https://carbon.now.sh/", featured: false, icon: "fa-image", color: "from-blue-600 to-indigo-800", subtag: "Fun" },
+            { id: "cd19", title: "Regex101", description: "Regular expression tester and debugger with instant visual breakdowns and pattern explanations.", category: "Coding & Tech", badge: "Regex Tester", rating: 4.9, url: "https://regex101.com/", featured: false, icon: "fa-asterisk", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "cd20", title: "Can I Use...", description: "Up-to-date web browser compatibility tables for modern HTML5, CSS3, and Web API support.", category: "Coding & Tech", badge: "Browser Compat", rating: 4.8, url: "https://caniuse.com/", featured: false, icon: "fa-window-maximize", color: "from-blue-600 to-indigo-800", subtag: "Books" },
+            { id: "cd21", title: "Codewars", description: "Gamified programming challenges (Katas) designed to improve language syntax and algorithm mastery.", category: "Coding & Tech", badge: "Code Katas", rating: 4.8, url: "https://www.codewars.com/", featured: false, icon: "fa-khanda", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "cd22", title: "CS50 by Harvard", description: "Harvard's legendary introductory Computer Science lectures, problem sets, and interactive exercises.", category: "Coding & Tech", badge: "Harvard CS", rating: 5.0, url: "https://cs50.harvard.edu/x/", featured: true, icon: "fa-building-columns", color: "from-blue-600 to-indigo-800", subtag: "Batches" },
+            { id: "cd23", title: "Exercism", description: "100% free mentored coding practice with human feedback across 70+ programming tracks.", category: "Coding & Tech", badge: "Mentored Tracks", rating: 4.9, url: "https://exercism.org/", featured: false, icon: "fa-dumbbell", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "cd24", title: "SQLZoo", description: "Interactive step-by-step SQL tutorials with direct live database query execution in-browser.", category: "Coding & Tech", badge: "Interactive SQL", rating: 4.7, url: "https://sqlzoo.net/", featured: false, icon: "fa-database", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "cd25", title: "Transform.tools", description: "Polyglot instant web converter for JSON to TypeScript, GraphQL, CSS-in-JS, Rust, and YAML.", category: "Coding & Tech", badge: "Data Converter", rating: 4.8, url: "https://transform.tools/", featured: false, icon: "fa-right-left", color: "from-blue-600 to-indigo-800", subtag: "Fun" },
+            { id: "cd26", title: "JSON Crack", description: "Interactive JSON viewer and converter that renders raw JSON into clear visual node graphs.", category: "Coding & Tech", badge: "Visualizer", rating: 4.9, url: "https://jsoncrack.com/", featured: false, icon: "fa-sitemap", color: "from-blue-600 to-indigo-800", subtag: "Fun" },
+            { id: "cd27", title: "Vercel Platform", description: "Popular developer cloud platform to instantly deploy frontend applications and web projects for free.", category: "Coding & Tech", badge: "Free Hosting", rating: 4.9, url: "https://vercel.com/", featured: false, icon: "fa-cloud-arrow-up", color: "from-blue-600 to-indigo-800", subtag: "Tests" },
+            { id: "fun1", title: "Wotaku Wiki", description: "The premier otaku index & wiki for anime, manga, light novels, Japanese learning, and media hubs.", category: "Fun & Media", badge: "Wotaku", rating: 5.0, url: "https://wotaku.wiki/", featured: true, icon: "fa-torii-gate", color: "from-pink-500 to-purple-600", subtag: "Fun" },
+            { id: "fun2", title: "FMHY Megathread", description: "FreeMediaHeckYa main portal - the largest curated directory for entertainment, streaming, and games.", category: "Fun & Media", badge: "FMHY Hub", rating: 5.0, url: "https://fmhy.net/", featured: true, icon: "fa-shield-halved", color: "from-pink-500 to-purple-600", subtag: "Fun" },
+            { id: "fun3", title: "EverythingMoe Directory", description: "Ultimate curated guide and index for watching anime, reading manga, light novels, and Japanese culture.", category: "Fun & Media", badge: "Anime Index", rating: 4.9, url: "https://everythingmoe.com/", featured: true, icon: "fa-tv", color: "from-pink-500 to-purple-600", subtag: "Fun" },
+            { id: "fun4", title: "Neal.fun Interactive Toys", description: "Collection of fascinating, fun, and relaxing interactive web games, space scale simulators, and web toys.", category: "Fun & Media", badge: "Web Games", rating: 4.9, url: "https://neal.fun/", featured: true, icon: "fa-gamepad", color: "from-pink-500 to-purple-600", subtag: "Fun" },
+            { id: "fun5", title: "EmuOS / Emupedia", description: "Retro web OS simulation allowing you to play classic 90s video games and nostalgic software in-browser.", category: "Fun & Media", badge: "Retro Arcade", rating: 4.8, url: "https://emupedia.net/beta/emuos/", featured: false, icon: "fa-floppy-disk", color: "from-pink-500 to-purple-600", subtag: "Fun" },
+            { id: "fun6", title: "The Useless Web", description: "Click the magic button to take you to a random weird, funny, or mesmerizing corner of the internet.", category: "Fun & Media", badge: "Random Portal", rating: 4.7, url: "https://theuselessweb.com/", featured: false, icon: "fa-dice", color: "from-pink-500 to-purple-600", subtag: "Fun" }
+        ];
+
+        // State variables
+        let resources = JSON.parse(localStorage.getItem('eduhub_resources')) || [...initialResources];
+
+        if (resources.length < initialResources.length) {
+            const existingIds = new Set(resources.map(r => r.id));
+            initialResources.forEach(item => {
+                if (!existingIds.has(item.id)) {
+                    resources.push(item);
+                }
+            });
+            localStorage.setItem('eduhub_resources', JSON.stringify(resources));
+        }
+
+        let currentView = 'home'; 
+        let activeCategoryId = null; 
+        let globalSearchQuery = '';
+        let categorySearchQuery = '';
+        let sortOption = 'rating-desc';
+        let activeSubTagFilter = 'ALL';
+        let bookmarkedIds = new Set(JSON.parse(localStorage.getItem('eduhub_bookmarks')) || ['sp1', 'fun1', 'cd3', 'cd5', 'jn1']);
+        let personalNotes = JSON.parse(localStorage.getItem('eduhub_notes')) || {};
+        let userRatings = JSON.parse(localStorage.getItem('eduhub_user_ratings')) || {};
+        
+        let dailyVisits = parseInt(localStorage.getItem('eduhub_daily_visits') || '0');
+        let activeNoteResourceId = null;
+        let activeReportTitle = '';
+
+        // Shreyansh Genius State
+        let flameClickCount = 0;
+        let isShreyanshModeActive = localStorage.getItem('eduhub_shreyansh_genius') === 'true';
+        const shreyanshQuotes = [
+            "According to Newton's 1st Law of Genius Dynamics: Shreyansh is 100% genius, and his study energy is directly proportional to infinite brilliance! 🧠✨",
+            "Scientists recently discovered that Shreyansh's brain runs on 99% pure genius and 1% raw superpower! 💡🧠",
+            "Legend has it if you say 'Shreyansh' three times in front of a mirror, an All-India Rank 1 appears! 🪞🏆",
+            "Shreyansh studied so hard that even quantum physics asked him for handwritten notes! 📖⚡",
+            "Warning: Extreme levels of pure genius detected in Shreyansh's study portal area! ⚠️🔥"
+        ];
+
+        // Pomodoro State
+        let timerSeconds = 25 * 60;
+        let timerInterval = null;
+        let timerRunning = false;
+
+        // App Initialization
+        function initApp() {
+            if (localStorage.getItem('eduhub_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').className = "fa-solid fa-sun text-sm sm:text-base";
+            }
+            renderStats();
+            renderCategoriesDashboard();
+            renderFeaturedScrollGrid();
+            updateBookmarkCount();
+            updateStreakUI();
+            updateShreyanshBannerState();
+        }
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+
+        // Theme Toggle Persistence
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('eduhub_theme', 'light');
+                icon.className = "fa-solid fa-moon text-sm sm:text-base";
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('eduhub_theme', 'dark');
+                icon.className = "fa-solid fa-sun text-sm sm:text-base";
+            }
+        }
+
+        // Navigation Functions
+        function navigateToHome() {
+            currentView = 'home';
+            activeCategoryId = null;
+            document.getElementById('homeView').classList.remove('hidden');
+            document.getElementById('categoryDetailView').classList.add('hidden');
+            renderCategoriesDashboard();
+        }
+
+        function navigateToCategory(catId) {
+            currentView = 'category';
+            activeCategoryId = catId;
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('categoryDetailView').classList.remove('hidden');
+            
+            const catObj = categories.find(c => c.id === catId) || { name: catId, icon: "fa-folder", desc: "Category resources" };
+            document.getElementById('breadcrumbCategoryName').innerText = catObj.name;
+            document.getElementById('activeCategoryTitle').innerText = catObj.name;
+            document.getElementById('activeCategorySubtitle').innerText = catObj.desc;
+            document.getElementById('activeCategoryIcon').className = `fa-solid ${catObj.icon}`;
+
+            renderCategoryResources();
+        }
+
+        function navigateToBookmarks() {
+            currentView = 'bookmarks';
+            activeCategoryId = null;
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('categoryDetailView').classList.remove('hidden');
+            
+            document.getElementById('breadcrumbCategoryName').innerText = "Saved Bookmarks";
+            document.getElementById('activeCategoryTitle').innerText = "Your Bookmarked Portals";
+            document.getElementById('activeCategorySubtitle').innerText = "Quick access to your starred study resources, lecture sites, and media hubs.";
+            document.getElementById('activeCategoryIcon').className = "fa-solid fa-bookmark";
+
+            renderCategoryResources();
+        }
+
+        // SHREYANSH GENIUS EASTER EGG SYSTEM
+        function handleFlameClick() {
+            flameClickCount++;
+            const flame = document.getElementById('flameIcon');
+            flame.classList.add('animate-bounce');
+            setTimeout(() => flame.classList.remove('animate-bounce'), 500);
+
+            if (flameClickCount >= 5) {
+                flameClickCount = 0;
+                triggerShreyanshEasterEgg();
+            } else {
+                showToast(`🔥 Easter Egg Progress: ${flameClickCount}/5 clicks...`, "fa-fire");
+            }
+        }
+
+        function triggerShreyanshEasterEgg() {
+            isShreyanshModeActive = true;
+            localStorage.setItem('eduhub_shreyansh_genius', 'true');
+            
+            updateShreyanshBannerState();
+            triggerShreyanshConfetti();
+            playShreyanshSound();
+
+            document.getElementById('shreyanshModal').classList.remove('hidden');
+            generateShreyanshQuote();
+        }
+
+        function updateShreyanshBannerState() {
+            const headline = document.getElementById('streakHeadline');
+            const badge = document.getElementById('shreyanshBadge');
+
+            if (isShreyanshModeActive) {
+                headline.innerHTML = `
+                    <span class="text-amber-400 font-extrabold animate-pulse">shreyansh genius hai! 🧠</span>
+                    <span class="text-xs font-normal text-amber-200 hidden md:inline">(Certified 100% Genius)</span>
+                `;
+                badge.classList.remove('hidden');
+            } else {
+                headline.innerHTML = `<span>Daily Focus & Knowledge Portal 🚀</span>`;
+                badge.classList.add('hidden');
+            }
+        }
+
+        function closeShreyanshModal() {
+            document.getElementById('shreyanshModal').classList.add('hidden');
+        }
+
+        function generateShreyanshQuote() {
+            const quoteEl = document.getElementById('shreyanshQuote');
+            const randomQuote = shreyanshQuotes[Math.floor(Math.random() * shreyanshQuotes.length)];
+            quoteEl.innerText = `"${randomQuote}"`;
+        }
+
+        function triggerShreyanshConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function playShreyanshSound() {
+            try {
+                const synth = new Tone.Synth().toDestination();
+                const now = Tone.now();
+                synth.triggerAttackRelease("C5", "8n", now);
+                synth.triggerAttackRelease("E5", "8n", now + 0.15);
+                synth.triggerAttackRelease("G5", "8n", now + 0.3);
+                synth.triggerAttackRelease("C6", "4n", now + 0.45);
+            } catch(e) {}
+        }
+
+        function toggleShreyanshGeniusMode() {
+            isShreyanshModeActive = !isShreyanshModeActive;
+            localStorage.setItem('eduhub_shreyansh_genius', isShreyanshModeActive ? 'true' : 'false');
+            updateShreyanshBannerState();
+            closeShreyanshModal();
+            showToast(isShreyanshModeActive ? "Shreyansh Genius Mode Enabled! 🧠" : "Normal mode restored!", "fa-brain");
+        }
+
+        // Render Stats
+        function renderStats() {
+            document.getElementById('statCategories').innerText = categories.length;
+            document.getElementById('statResources').innerText = resources.length;
+            const jeeCount = resources.filter(r => r.category === 'JEE & NEET').length;
+            const codingCount = resources.filter(r => r.category === 'Coding & Tech').length;
+            document.getElementById('statJeeNeet').innerText = jeeCount;
+            document.getElementById('statCodingTech').innerText = codingCount;
+        }
+
+        // Render Categories Dashboard Grid
+        function renderCategoriesDashboard() {
+            const grid = document.getElementById('categoriesDashboardGrid');
+            if (!grid) return;
+
+            grid.innerHTML = categories.map(cat => {
+                const count = resources.filter(r => r.category === cat.id && (activeSubTagFilter === 'ALL' || r.subtag === activeSubTagFilter)).length;
+                return `
+                    <div onclick="navigateToCategory('${cat.id}')" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:shadow-xl transition cursor-pointer group flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${cat.color} text-white flex items-center justify-center text-xl shadow-md group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid ${cat.icon}"></i>
+                                </div>
+                                <span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full text-xs font-bold">
+                                    ${count} Links
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 dark:text-white text-base group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                                    ${cat.name}
+                                </h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                    ${cat.desc}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs font-semibold text-blue-600 dark:text-blue-400">
+                            <span>Browse Portal</span>
+                            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Featured Scroll Grid
+        function renderFeaturedScrollGrid() {
+            const scrollGrid = document.getElementById('featuredScrollGrid');
+            if (!scrollGrid) return;
+            const featured = resources.filter(r => r.featured);
+            scrollGrid.innerHTML = featured.map(item => `
+                <div onclick="recordVisit(); triggerRedirect('${item.url}');" class="min-w-[260px] max-w-[260px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shrink-0 hover:shadow-lg transition cursor-pointer group flex flex-col justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr ${item.color} text-white flex items-center justify-center text-sm shadow-sm shrink-0">
+                            <i class="fa-solid ${item.icon}"></i>
+                        </div>
+                        <div class="truncate">
+                            <h5 class="font-bold text-slate-900 dark:text-white text-sm truncate group-hover:text-blue-600">${item.title}</h5>
+                            <span class="text-[10px] font-semibold text-blue-600 dark:text-blue-400">${item.badge}</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">${item.description}</p>
+                </div>
+            `).join('');
+        }
+
+        // Global Search Handler
+        function handleGlobalSearch() {
+            const query = document.getElementById('globalSearchInput').value.toLowerCase().trim();
+            const clearBtn = document.getElementById('clearGlobalSearchBtn');
+            if (query) {
+                clearBtn.classList.remove('hidden');
+                const match = resources.find(r => r.title.toLowerCase().includes(query) || r.description.toLowerCase().includes(query));
+                if (match) {
+                    navigateToCategory(match.category);
+                    categorySearchQuery = query;
+                    document.getElementById('categorySearchInput').value = query;
+                    renderCategoryResources();
+                }
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+        }
+
+        function clearGlobalSearch() {
+            document.getElementById('globalSearchInput').value = '';
+            document.getElementById('clearGlobalSearchBtn').classList.add('hidden');
+        }
+
+        // Category Search & Sort
+        function handleCategorySearch() {
+            categorySearchQuery = document.getElementById('categorySearchInput').value.toLowerCase().trim();
+            const clearBtn = document.getElementById('clearCategorySearchBtn');
+            if (categorySearchQuery) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            renderCategoryResources();
+        }
+
+        function clearCategorySearch() {
+            document.getElementById('categorySearchInput').value = '';
+            document.getElementById('clearCategorySearchBtn').classList.add('hidden');
+            categorySearchQuery = '';
+            renderCategoryResources();
+        }
+
+        function handleSortChange() {
+            sortOption = document.getElementById('sortSelect').value;
+            renderCategoryResources();
+        }
+
+        function filterBySubTag(tag) {
+            activeSubTagFilter = tag;
+            document.querySelectorAll('.subtag-btn').forEach(btn => {
+                if (btn.innerText.includes(tag) || (tag === 'ALL' && btn.innerText.includes('All'))) {
+                    btn.className = "subtag-btn px-3 py-1.5 rounded-xl bg-blue-600 text-white shrink-0";
+                } else {
+                    btn.className = "subtag-btn px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 shrink-0";
+                }
+            });
+            renderCategoriesDashboard();
+            if (currentView === 'category') {
+                renderCategoryResources();
+            }
+        }
+
+        // Daily Streak & Visit Tracker
+        function recordVisit() {
+            dailyVisits += 1;
+            localStorage.setItem('eduhub_daily_visits', dailyVisits.toString());
+            updateStreakUI();
+        }
+
+        function updateStreakUI() {
+            const countText = document.getElementById('dailyGoalText');
+            const goalBar = document.getElementById('dailyGoalBar');
+            if (countText && goalBar) {
+                countText.innerText = `${Math.min(dailyVisits, 3)} / 3 Portals`;
+                const percentage = Math.min((dailyVisits / 3) * 100, 100);
+                goalBar.style.width = `${percentage}%`;
+            }
+        }
+
+        function triggerRedirect(url) {
+            window.open(url, '_blank');
+        }
+
+        // Pomodoro Timer Logic with Tone.js
+        function togglePomodoroModal() {
+            document.getElementById('pomodoroModal').classList.toggle('hidden');
+        }
+
+        function setTimerMode(minutes) {
+            pauseTimer();
+            timerSeconds = minutes * 60;
+            updateTimerDisplay();
+            document.getElementById('btnMode25').className = minutes === 25 ? "px-3 py-1.5 rounded-xl bg-red-600 text-white" : "px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300";
+            document.getElementById('btnMode5').className = minutes === 5 ? "px-3 py-1.5 rounded-xl bg-red-600 text-white" : "px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300";
+            document.getElementById('btnMode15').className = minutes === 15 ? "px-3 py-1.5 rounded-xl bg-red-600 text-white" : "px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300";
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            const formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('pomodoroTimerDisplay').innerText = formatted;
+            document.getElementById('timerDisplayHeader').innerText = formatted;
+        }
+
+        function startTimer() {
+            if (timerRunning) return;
+            timerRunning = true;
+            timerInterval = setInterval(() => {
+                if (timerSeconds > 0) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                } else {
+                    pauseTimer();
+                    try {
+                        const synth = new Tone.Synth().toDestination();
+                        synth.triggerAttackRelease("C5", "8n");
+                    } catch(e) {}
+                    showToast("⏰ Pomodoro session complete! Take a break.", "fa-bell");
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            timerRunning = false;
+            clearInterval(timerInterval);
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            setTimerMode(25);
+        }
+
+        // QR Code Modal & Notes & Reports
+        function openQrModal(title, url) {
+            document.getElementById('qrModalTitle').innerText = title;
+            document.getElementById('qrModalUrl').innerText = url;
+            document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}`;
+            document.getElementById('qrModal').classList.remove('hidden');
+        }
+        function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
+        function copyShareUrl() {
+            const url = document.getElementById('qrModalUrl').innerText;
+            navigator.clipboard.writeText(url);
+            showToast("Copied shareable link!", "fa-copy");
+        }
+
+        function openNotesModal(id) {
+            activeNoteResourceId = id;
+            document.getElementById('noteInputText').value = personalNotes[id] || '';
+            document.getElementById('notesModal').classList.remove('hidden');
+        }
+        function closeNotesModal() { document.getElementById('notesModal').classList.add('hidden'); }
+        function saveNoteForResource() {
+            if (!activeNoteResourceId) return;
+            const text = document.getElementById('noteInputText').value.trim();
+            if (text) { personalNotes[activeNoteResourceId] = text; }
+            else { delete personalNotes[activeNoteResourceId]; }
+            localStorage.setItem('eduhub_notes', JSON.stringify(personalNotes));
+            closeNotesModal();
+            showToast("Note saved successfully!", "fa-note-sticky");
+            renderCategoryResources();
+        }
+
+        function openReportModal(title) {
+            activeReportTitle = title;
+            document.getElementById('reportTargetTitle').innerText = `Report link issue for "${title}"?`;
+            document.getElementById('reportModal').classList.remove('hidden');
+        }
+        function closeReportModal() { document.getElementById('reportModal').classList.add('hidden'); }
+        function submitReport() {
+            closeReportModal();
+            showToast(`Report received for ${activeReportTitle}. We'll verify!`, "fa-check-circle");
+        }
+
+        // Add New Resource Modal
+        function openAddModal() { document.getElementById('addModal').classList.remove('hidden'); }
+        function closeAddModal() { document.getElementById('addModal').classList.add('hidden'); }
+        function saveNewResource() {
+            const title = document.getElementById('newTitle').value.trim();
+            const url = document.getElementById('newUrl').value.trim();
+            const category = document.getElementById('newCategory').value;
+            const description = document.getElementById('newDesc').value.trim();
+
+            if (!title || !url) {
+                showToast("Please enter title and valid URL", "fa-triangle-exclamation");
+                return;
+            }
+
+            const newObj = {
+                id: 'res_' + Date.now(),
+                title, url, category, description,
+                badge: 'Custom',
+                rating: 5.0,
+                featured: false,
+                icon: 'fa-link',
+                color: 'from-blue-600 to-indigo-600',
+                subtag: category === 'Fun & Media' ? 'Fun' : 'Batches'
+            };
+
+            resources.unshift(newObj);
+            localStorage.setItem('eduhub_resources', JSON.stringify(resources));
+            closeAddModal();
+            renderStats();
+            renderCategoriesDashboard();
+            if (currentView === 'category' && activeCategoryId === category) {
+                renderCategoryResources();
+            }
+            showToast("Successfully added new resource!", "fa-circle-check");
+        }
+
+        // Export & Import Backup JSON
+        function openExportModal() {
+            document.getElementById('jsonOutput').value = JSON.stringify(resources, null, 2);
+            document.getElementById('exportModal').classList.remove('hidden');
+        }
+        function closeExportModal() { document.getElementById('exportModal').classList.add('hidden'); }
+        function copyJsonToClipboard() {
+            const jsonText = document.getElementById('jsonOutput').value;
+            navigator.clipboard.writeText(jsonText);
+            const notice = document.getElementById('copyNotice');
+            notice.style.opacity = '1';
+            setTimeout(() => { notice.style.opacity = '0'; }, 2000);
+        }
+        function importJsonData() {
+            try {
+                const parsed = JSON.parse(document.getElementById('jsonOutput').value);
+                if (Array.isArray(parsed)) {
+                    resources = parsed;
+                    localStorage.setItem('eduhub_resources', JSON.stringify(resources));
+                    renderStats();
+                    renderCategoriesDashboard();
+                    closeExportModal();
+                    showToast("Successfully imported backup JSON data!", "fa-file-import");
+                } else {
+                    showToast("Invalid JSON format. Must be an array.", "fa-triangle-exclamation");
+                }
+            } catch(e) {
+                showToast("JSON Syntax Error!", "fa-circle-xmark");
+            }
+        }
+
+        // Render Category Resources
+        function renderCategoryResources() {
+            const grid = document.getElementById('categoryResourceGrid');
+            const emptyState = document.getElementById('categoryEmptyState');
+
+            let filtered = resources.filter(res => {
+                let matchesCategory = currentView === 'bookmarks' ? bookmarkedIds.has(res.id) : res.category === activeCategoryId;
+                let matchesSearch = categorySearchQuery === '' || 
+                    res.title.toLowerCase().includes(categorySearchQuery) || 
+                    res.description.toLowerCase().includes(categorySearchQuery) ||
+                    res.badge.toLowerCase().includes(categorySearchQuery);
+                let matchesSubTag = activeSubTagFilter === 'ALL' || res.subtag === activeSubTagFilter;
+
+                return matchesCategory && matchesSearch && matchesSubTag;
+            });
+
+            if (sortOption === 'rating-desc') {
+                filtered.sort((a, b) => (userRatings[b.id] || b.rating || 0) - (userRatings[a.id] || a.rating || 0));
+            } else if (sortOption === 'title-asc') {
+                filtered.sort((a, b) => a.title.localeCompare(b.title));
+            }
+
+            document.getElementById('categoryResultsCount').innerText = `Showing ${filtered.length} links`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                grid.innerHTML = filtered.map(item => {
+                    const isBookmarked = bookmarkedIds.has(item.id);
+                    const userScore = userRatings[item.id] || item.rating;
+                    const hasNote = !!personalNotes[item.id];
+
+                    return `
+                        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex flex-col justify-between hover:shadow-lg transition group">
+                            <div>
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr ${item.color || 'from-blue-600 to-indigo-600'} text-white flex items-center justify-center text-base shadow-sm shrink-0">
+                                            <i class="fa-solid ${item.icon || 'fa-link'}"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900 dark:text-white text-base group-hover:text-blue-600 dark:group-hover:text-blue-400 transition flex items-center space-x-1.5">
+                                                <span>${item.title}</span>
+                                            </h4>
+                                            <div class="flex items-center space-x-2 mt-0.5">
+                                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Server Status: Operational"></span>
+                                                <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">${item.category}</span>
+                                                <span class="text-slate-300 dark:text-slate-600">•</span>
+                                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50">${item.badge}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center space-x-1">
+                                        <button onclick="rateResource('${item.id}', 5)" title="Rate 5 stars" class="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 text-[11px] font-bold space-x-1 hover:scale-105 transition">
+                                            <i class="fa-solid fa-star text-[10px] text-amber-500"></i>
+                                            <span>${userScore}</span>
+                                        </button>
+                                        <button onclick="toggleBookmark('${item.id}')" title="${isBookmarked ? 'Remove Bookmark' : 'Save Bookmark'}" 
+                                            class="text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 p-1.5 rounded-lg transition">
+                                            <i class="fa-${isBookmarked ? 'solid text-amber-500' : 'regular'} fa-bookmark"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <p class="text-xs text-slate-600 dark:text-slate-300 mt-3 line-clamp-2 leading-relaxed">
+                                    ${item.description}
+                                </p>
+
+                                ${hasNote ? `
+                                    <div class="mt-2.5 p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-xl text-[11px] text-amber-800 dark:text-amber-200 flex items-start space-x-1.5">
+                                        <i class="fa-solid fa-note-sticky text-amber-500 mt-0.5"></i>
+                                        <span class="line-clamp-1 italic">${personalNotes[item.id]}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
+                                <div class="flex items-center space-x-2 text-slate-400">
+                                    <button onclick="openQrModal('${item.title}', '${item.url}')" title="Share / Generate QR" class="hover:text-blue-500 text-xs">
+                                        <i class="fa-solid fa-qrcode"></i>
+                                    </button>
+                                    <button onclick="openNotesModal('${item.id}')" title="Add Personal Note" class="hover:text-amber-500 text-xs">
+                                        <i class="fa-regular fa-note-sticky"></i>
+                                    </button>
+                                    <button onclick="openReportModal('${item.title}')" title="Report Issue" class="hover:text-red-500 text-xs">
+                                        <i class="fa-regular fa-flag"></i>
+                                    </button>
+                                </div>
+                                
+                                <button onclick="recordVisit(); triggerRedirect('${item.url}');" 
+                                    class="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-900 dark:bg-slate-700 hover:bg-blue-600 dark:hover:bg-blue-600 text-white text-xs font-semibold rounded-xl transition shadow-sm">
+                                    <span>Open Resource</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function toggleBookmark(id) {
+            if (bookmarkedIds.has(id)) {
+                bookmarkedIds.delete(id);
+                showToast("Removed from bookmarks", "fa-bookmark-slash");
+            } else {
+                bookmarkedIds.add(id);
+                showToast("Saved to bookmarks!", "fa-bookmark");
+            }
+            localStorage.setItem('eduhub_bookmarks', JSON.stringify(Array.from(bookmarkedIds)));
+            updateBookmarkCount();
+            if (currentView === 'bookmarks' || currentView === 'category') {
+                renderCategoryResources();
+            }
+        }
+
+        function updateBookmarkCount() {
+            document.getElementById('headerBookmarkCount').innerText = bookmarkedIds.size;
+        }
+
+        function rateResource(id, score) {
+            userRatings[id] = score;
+            localStorage.setItem('eduhub_user_ratings', JSON.stringify(userRatings));
+            showToast(`Rated ${score} Stars!`, "fa-star");
+            if (currentView === 'category' || currentView === 'bookmarks') {
+                renderCategoryResources();
+            }
+        }
+
+        function showToast(msg, iconClass) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            document.getElementById('toastIcon').className = `fa-solid ${iconClass} text-emerald-400`;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
